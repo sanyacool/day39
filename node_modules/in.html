@@ -1,0 +1,17 @@
+﻿<!doctype html>
+<html>
+  <head>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"> </script>
+  <title>Management interface</title>
+  </head> 
+  <body>
+      <button onClick="onMouseClick(-20)"> Левая </button>
+      <button onClick="onMouseClick(20)"> Правая </button>
+      <script >
+          var socket = io();
+          function onMouseClick(val) {
+            socket.emit('button clicked', val);
+          };
+      </script>
+  </body>
+</html>
