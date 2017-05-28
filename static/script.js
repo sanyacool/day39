@@ -56,12 +56,6 @@ function CreateXO(evt) { //Рисуем крестики-нолики
 		stage.update();
 		//Проверяем ничью
 		count++;
-		if (count == 9) {
-			alert('Draw!');
-			Restart();
-			return
-		}
-		
 		if (figure == 'cross') {
 			gridOX[line][column] = 1;
 			checkVictory();
@@ -71,7 +65,11 @@ function CreateXO(evt) { //Рисуем крестики-нолики
 			checkVictory();
 			figure = 'cross';
 		};
-		
+		if (count == 9) {
+			alert('Draw!');
+			Restart();
+			return
+		}
 	} else {
 		console.log('Figure already exists!');
 		//alert('Figure already exists!');
