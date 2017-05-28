@@ -74,7 +74,7 @@ function CreateXO(evt) { //Рисуем крестики-нолики
 		
 	} else {
 		console.log('Figure already exists!');
-		alert('Figure already exists!');
+		//alert('Figure already exists!');
 	};
 	
 };
@@ -147,5 +147,5 @@ function Restart() {
 	grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3 * 2, parseFloat(document.getElementById("canvas").width), 2);
 	stage.addChild(grid);
 	stage.update();
-	// Неплохо было бы реализовать счет
+	// Неплохо было бы реализовать подсчет очков и вывод их на экран
 }
