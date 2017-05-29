@@ -6,10 +6,20 @@
     <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"> </script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"> </script>
 		<link rel="stylesheet" type="text/css" href="/static/main.css" >
+		<script src="/static/script.js"></script>
+
     <title>Day 42</title>
 </head> 
-	<body>
-		<canvas id='canvas' width='900px' height='900px'></canvas>
-		<script src="/static/script.js"></script>
-	</body>
+	<body onload="onload()">
+		<p style="text-align: center; margin:0; padding-top: 10px;">
+			<button id="but1">
+				<img src="/static/create.png" alt="" style="vertical-align:middle"> 
+				Создать стол
+			</button>
+			<button id="but2">
+				<img src="/static/connection.png" alt="" style="vertical-align:middle"> 
+				Подключиться к столу
+			</button>
+		</p>	
+  </body>
 </html>
