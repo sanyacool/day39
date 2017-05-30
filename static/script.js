@@ -14,6 +14,8 @@ socket.on("connected", function(roomID, fig) {
 	document.body.innerHTML = "<canvas id='canvas' width='900px' height='900px'></canvas>";
 	document.body.innerHTML += "<canvas id='score' width='120px' height='100px'></canvas>";
 	
+	reSize();
+	
 	stage = new createjs.Stage("canvas");
 	score = new createjs.Stage("score");
 	
@@ -447,4 +449,13 @@ function Restart() {
 	stage.addChild(grid);
 	stage.update();
 	// Неплохо было бы реализовать подсчет очков и вывод их на экран
+}
+
+function reSize() {
+	let width = window.innerWidth;
+	let height = window.innerHeight;
+	let min = width > height ? height : width;
+	let canvas = document.getElementById('canvas');
+	canvas.style.width = min + 'px';
+	canvas.style.height = min + 'px';
 }

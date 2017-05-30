@@ -76,7 +76,7 @@ function onConnection(socket) {
 		//console.log("step ", rooms[roomID].step, ", player ", socket.id);
 		console.log(rooms[roomID]);
 		if (!rooms[roomID]) return;
-		if ((rooms[roomID].gridOX[line][column] == -1) && (rooms[roomID].step == socket.id)) {
+		if ((rooms[roomID].gridOX[line][column] == -1) && (rooms[roomID].step == socket.id) && (rooms[roomID].playerCount == 2)) {
 			//console.log("step ", rooms[roomID].step == rooms[roomID].leftPlayer?"left player":"right player");
 			rooms[roomID].gridOX[line][column] = socket.id;
 			rooms[roomID].count++;
