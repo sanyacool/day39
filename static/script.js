@@ -11,9 +11,9 @@ var myScore, enemyScore;
 socket.on("connected", function(roomID, fig) {
 	
 	document.title = "Room: " + roomID;
-	document.body.innerHTML = "<canvas id='canvas' width='900px' height='900px'></canvas>";
+	document.body.innerHTML = "<canvas id='canvas' width='1000px' height='1000px'></canvas>";
 	document.body.innerHTML += "<canvas id='score' width='120px' height='100px'></canvas>";
-	
+
 	reSize();
 	
 	stage = new createjs.Stage("canvas");
@@ -107,19 +107,21 @@ function wrongTable() {
 function CreateXO(evt) { //Рисуем крестики-нолики
 	
 	//console.log('hi!');
-	let column = Math.floor(evt.stageX / 300);
-	let line = Math.floor(evt.stageY / 300);
-	if (column == 3) column = 2;
-	if (line == 3) line = 2;
+	let column = Math.floor(evt.stageX / 100);
+	let line = Math.floor(evt.stageY / 100);
+	if (column == 10) column = 9;
+	if (line == 10) line = 9;
 	
 	socket.emit("step", line, column);
 	
 };
 
 socket.on("put figure", function(line, column) {
-	let X = 300 * column + 150;
-	let Y = 300 * line + 150;
+	let X = 100 * column + 50;
+	let Y = 100 * line + 50;
 	let fig = new createjs.Sprite(spriteSheet, myFigure);
+	fig.scaleX = 100 / 150;
+	fig.scaleY = 100 / 146; 
 	fig.regX = 75;
 	fig.regY = 73;
 	fig.x = X;
@@ -129,9 +131,11 @@ socket.on("put figure", function(line, column) {
 });
 
 socket.on("put opponent figure", function(line, column) {
-	let X = 300 * column + 150;
-	let Y = 300 * line + 150;
+	let X = 100 * column + 50;
+	let Y = 100 * line + 50;
 	let fig = new createjs.Sprite(spriteSheet, opponentFigure);
+	fig.scaleX = 100 / 150;
+	fig.scaleY = 100 / 146; 
 	fig.regX = 75;
 	fig.regY = 73;
 	fig.x = X;
@@ -169,65 +173,15 @@ socket.on("put opponent figure", function(line, column) {
 	};*/
 });
 
-socket.on("win", function(line) {
-	switch(line) {
-		case 1:
-			DrawLine(150, 150, 750, 150);
-			break;
-		case 2:
-			DrawLine(150, 450, 750, 450);
-			break;
-		case 3:
-			DrawLine(150, 750, 750, 750);
-			break;
-		case 4:
-			DrawLine(150, 150, 150, 750);
-			break;
-		case 5:
-			DrawLine(450, 150, 450, 750);
-			break;
-		case 6:
-			DrawLine(750, 150, 750, 750);
-			break;
-		case 7:
-			DrawLine(150, 150, 750, 750);
-			break;
-		case 8:
-			DrawLine(150, 750, 750, 150);
-			break;		
-	}
+socket.on("win", function(line) {	
+	DrawLine(line[0] * 100 + 50, line[1] * 100 + 50, line[2] * 100 + 50, line[3] * 100 + 50)	
 	
 	alert("You won");
 	Restart();
 });
 
 socket.on("lose", function(line) {
-		switch(line) {
-		case 1:
-			DrawLine(150, 150, 750, 150);
-			break;
-		case 2:
-			DrawLine(150, 450, 750, 450);
-			break;
-		case 3:
-			DrawLine(150, 750, 750, 750);
-			break;
-		case 4:
-			DrawLine(150, 150, 150, 750);
-			break;
-		case 5:
-			DrawLine(450, 150, 450, 750);
-			break;
-		case 6:
-			DrawLine(750, 150, 750, 750);
-			break;
-		case 7:
-			DrawLine(150, 150, 750, 750);
-			break;
-		case 8:
-			DrawLine(150, 750, 750, 150);
-			break;		
-	}
+	DrawLine(line[0] * 100 + 50, line[1] * 100 + 50, line[2] * 100 + 50, line[3] * 100 + 50)	
 	
 	alert("You lost");
 	Restart();
@@ -442,10 +396,15 @@ function Restart() {
 	// Рисуем сетку
 	// Можно сетку реализовать в <div>, чтобы ее каждый раз не перерисовывать
 	var grid = new createjs.Shape();
-	grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3, 0, 2, parseFloat(document.getElementById("canvas").height));
-	grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3 * 2, 0, 2, parseFloat(document.getElementById("canvas").height));
-	grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3, parseFloat(document.getElementById("canvas").width), 2);
-	grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3 * 2, parseFloat(document.getElementById("canvas").width), 2);
+	for (i = 100; i < 1000; i += 100)
+	{
+		grid.graphics.beginFill("black").drawRect(0, i - 1, 1000, 2);
+		grid.graphics.beginFill("black").drawRect(i - 1, 0, 2, 1000);
+		/*grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3, 0, 2, parseFloat(document.getElementById("canvas").height));
+		grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3 * 2, 0, 2, parseFloat(document.getElementById("canvas").height));
+		grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3, parseFloat(document.getElementById("canvas").width), 2);
+		grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3 * 2, parseFloat(document.getElementById("canvas").width), 2);*/
+	}
 	stage.addChild(grid);
 	stage.update();
 	// Неплохо было бы реализовать подсчет очков и вывод их на экран
