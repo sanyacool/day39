@@ -1,7 +1,7 @@
 ﻿<!doctype html>
 <html>
-  <head>
-		
+  <head>		
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <script src="https://code.createjs.com/easeljs-0.8.0.min.js"> </script>
     <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"> </script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"> </script>
@@ -11,11 +11,16 @@
     <title>Day 44</title>
 </head> 
 	<body onload="onload()" onresize="reSize()">
-		<p style="text-align: center; margin:0; padding-top: 10px;">
+		<p style="text-align:center; margin:0; padding-top: 100px;">
+			<input id="field" value="Введите размер поля"></input>
+			<br>
+			<input id="winCnt" value="Введите длину для победы"></input>
+			<br>
 			<button id="but1">
 				<img src="/static/create.png" alt="" style="vertical-align:middle"> 
 				Создать стол
 			</button>
+			<br>
 			<button id="but2">
 				<img src="/static/connection.png" alt="" style="vertical-align:middle"> 
 				Подключиться к столу

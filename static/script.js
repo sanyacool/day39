@@ -1,17 +1,18 @@
+"use strict";
 var socket = io();
 
-var stage;
+var stage, score;
 var gridOX;
 var myFigure, opponentFigure;
 var data;
 var spriteSheet;
 var myScore, enemyScore;
+var fieldSize;
 
-
-socket.on("connected", function(roomID, fig) {
-	
+socket.on("connected", function(roomID, fig, size) {
+	fieldSize = size;
 	document.title = "Room: " + roomID;
-	document.body.innerHTML = "<canvas id='canvas' width='1000px' height='1000px'></canvas>";
+	document.body.innerHTML = "<canvas id='canvas' width='" + size * 100 + "px' height='" + size * 100 + "px'></canvas>";
 	document.body.innerHTML += "<canvas id='score' width='120px' height='100px'></canvas>";
 
 	reSize();
@@ -68,24 +69,49 @@ socket.on("connected", function(roomID, fig) {
 		
 	stage.on("stagemousedown", CreateXO);
 
-	Restart();
+	Restart(fieldSize);
 });
 
 function onload() {
 	document.getElementById('but1').addEventListener('click', newTable);
 	document.getElementById('but2').addEventListener('click', connectTable);
+	document.getElementById('field').addEventListener('focus', function(evt) {
+		evt.target.style.backgroundColor = "#5ED2B8";
+		evt.target.value = "";
+	});
+	document.getElementById('winCnt').addEventListener('focus', function(evt) {
+		evt.target.style.backgroundColor = "#5ED2B8";
+		evt.target.value = "";
+	});
+	document.getElementById('field').addEventListener("blur", function(evt) {
+		evt.target.style.backgroundColor = "rgba(31,123,103,0.6)";
+		if (evt.target.value == "")
+			evt.target.value = "Введите размер поля";
+	});
+	document.getElementById('winCnt').addEventListener("blur", function(evt) {
+		evt.target.style.backgroundColor = "rgba(31,123,103,0.6)";
+		if (evt.target.value == "")
+			evt.target.value = "Введите длину для победы"
+	});
 }
 
-function newTable(event) {	
+function newTable(event) {
+	let size = parseInt(document.getElementById('field').value);
+	let win = parseInt(document.getElementById('winCnt').value);
+	
+	if (!size || !win)
+		return;
+	if (size < 3 && win < 3)
+		return;
 	event.preventDefault();
-	roomId = (Math.random().toString(36)).substring(2, 6);
+	let roomId = (Math.random().toString(36)).substring(2, 6);
 	alert('Вы создали комнату ' + roomId);
-	socket.emit('create room', roomId);
+	socket.emit('create room', roomId, size, win);
 };
 
 function connectTable(event) {
 	event.preventDefault();
-	roomId = prompt("Введите ID комнаты", "");
+	let roomId = prompt("Введите ID комнаты", "");
 	if (roomId == null) 
 		return;
 	if (roomId != '' && roomId.indexOf(' ') < 0)
@@ -95,7 +121,7 @@ function connectTable(event) {
 };
 
 function wrongTable() {
-	roomId = prompt("Неверно введен ID \nВведите ID комнаты", "");
+	let roomId = prompt("Неверно введен ID \nВведите ID комнаты", "");
 	if (roomId == null) 
 		return;
 	if (roomId != '' && roomId.indexOf(' ') < 0)
@@ -104,14 +130,15 @@ function wrongTable() {
 		wrongTable();			
 };
 
-function CreateXO(evt) { //Рисуем крестики-нолики
+function CreateXO(evt) { 
+	//Рисуем крестики-нолики
 	
-	//console.log('hi!');
 	let column = Math.floor(evt.stageX / 100);
 	let line = Math.floor(evt.stageY / 100);
-	if (column == 10) column = 9;
-	if (line == 10) line = 9;
+	if (column == fieldSize) column = fieldSize - 1;
+	if (line == fieldSize) line = fieldSize - 1;
 	
+	//console.log('pressed: ', column, " - ", line);
 	socket.emit("step", line, column);
 	
 };
@@ -142,35 +169,6 @@ socket.on("put opponent figure", function(line, column) {
 	fig.y = Y;		
 	stage.addChild(fig);
 	stage.update();
-	/*if (gridOX[line][column] == -1) {
-		console.log('Create ' + figure + ' in X = ' + Math.floor(evt.stageX) + ' Y = ' + Math.floor(evt.stageY));
-		let fig = new createjs.Sprite(spriteSheet, figure);
-		fig.regX = 75;
-		fig.regY = 73;
-		fig.x = X;
-		fig.y = Y;		
-		stage.addChild(fig);
-		stage.update();
-		//Проверяем ничью
-		count++;
-		if (figure == 'cross') {
-			gridOX[line][column] = 1;
-			checkVictory();
-			figure = 'circle';
-		} else {
-			gridOX[line][column] = 0;
-			checkVictory();
-			figure = 'cross';
-		};
-		if (count == 9) {
-			alert('Draw!');
-			Restart();
-			return
-		}
-	} else {
-		console.log('Figure already exists!');
-		//alert('Figure already exists!');
-	};*/
 });
 
 socket.on("win", function(line) {	
@@ -182,7 +180,6 @@ socket.on("win", function(line) {
 
 socket.on("lose", function(line) {
 	DrawLine(line[0] * 100 + 50, line[1] * 100 + 50, line[2] * 100 + 50, line[3] * 100 + 50)	
-	
 	alert("You lost");
 	Restart();
 });
@@ -199,184 +196,10 @@ socket.on("change score", function (mySc, enSc) {
 	score.update();
 
 });
-
-function checkVictory() {
 	
-	for (let i = 0; i < 3; i++)
-		{
-			y = i * 300 + 150;
-			x = i * 300 + 150;
-			if (gridOX[i][0] == 0 && gridOX[i][1] == 0 && gridOX[i][2] == 0) 
-			{				
-				DrawLine(150, y, 750, y);
-				stage.update();
-				BlueWin();				
-			}
-			if (gridOX[i][0] == 1 && gridOX[i][1] == 1 && gridOX[i][2] == 1) 
-			{
-				DrawLine(150, y, 750, y);
-				stage.update();
-				RedWin();				
-			}
-			if (gridOX[0][i] == 1 && gridOX[1][i] == 1 && gridOX[2][i] == 1) 
-			{
-				DrawLine(x, 150, x, 750);
-				stage.update();
-				RedWin();				
-			}
-			if (gridOX[0][i] == 0 && gridOX[1][i] == 0 && gridOX[2][i] == 0) 
-			{
-				DrawLine(x, 150, x, 750);
-				stage.update();
-				BlueWin();				
-			}
-		}
-	
-	if (gridOX[0][0] == 0 && gridOX[1][1] == 0 && gridOX[2][2] == 0)
-	{
-		DrawLine(150, 150, 750, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][2] == 0 && gridOX[1][1] == 0 && gridOX[2][0] == 0)
-	{
-		DrawLine(750, 150, 150, 750);
-		stage.update();
-		BlueWin();
-	}
-	
-	if (gridOX[0][0] == 1 && gridOX[1][1] == 1 && gridOX[2][2] == 1)
-	{
-		DrawLine(150, 150, 750, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][2] == 1 && gridOX[1][1] == 1 && gridOX[2][0] == 1)
-	{
-		DrawLine(750, 150, 150, 750);
-		stage.update();
-		RedWin();
-	}
-		
-		
-		
-		
-	
-	// Желательно оптимизировать
-	// If Circles Wins
-/*	if (gridOX[0][0] == 0 && gridOX[1][1] == 0 && gridOX[2][2] == 0)
-	{
-		DrawLine(150, 150, 750, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][2] == 0 && gridOX[1][1] == 0 && gridOX[2][0] == 0)
-	{
-		DrawLine(750, 150, 150, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][0] == 0 && gridOX[0][1] == 0 && gridOX[0][2] == 0)
-	{
-		DrawLine(150, 150, 750, 150);
-		stage.update();
-		BlueWin();	
-	}
-	if (gridOX[1][0] == 0 && gridOX[1][1] == 0 && gridOX[1][2] == 0)
-	{
-		DrawLine(150, 450, 750, 450);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[2][0] == 0 && gridOX[2][1] == 0 && gridOX[2][2] == 0)
-	{
-		DrawLine(150, 750, 750, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][0] == 0 && gridOX[1][0] == 0 && gridOX[2][0] == 0)
-	{
-		DrawLine(150, 150, 150, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][1] == 0 && gridOX[1][1] == 0 && gridOX[2][1] == 0)
-	{
-		DrawLine(450, 150, 450, 750);
-		stage.update();
-		BlueWin();
-	}
-	if (gridOX[0][2] == 0 && gridOX[1][2] == 0 && gridOX[2][2] == 0)
-	{
-		DrawLine(750, 150, 750, 750);
-		stage.update();
-		BlueWin();
-	}
-	// If Crosses Wins
-	if (gridOX[0][0] == 1 && gridOX[1][1] == 1 && gridOX[2][2] == 1)
-	{
-		DrawLine(150, 150, 750, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][2] == 0 && gridOX[1][1] == 0 && gridOX[2][0] == 1)
-	{
-		DrawLine(750, 150, 150, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][0] == 0 && gridOX[0][1] == 0 && gridOX[0][2] == 1)
-	{
-		DrawLine(150, 150, 750, 150);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[1][0] == 0 && gridOX[1][1] == 0 && gridOX[1][2] == 1)
-	{
-		DrawLine(150, 450, 750, 450);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[2][0] == 0 && gridOX[2][1] == 0 && gridOX[2][2] == 1)
-	{
-		DrawLine(150, 750, 750, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][0] == 0 && gridOX[1][0] == 0 && gridOX[2][0] == 1)
-	{
-		DrawLine(150, 150, 150, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][1] == 0 && gridOX[1][1] == 0 && gridOX[2][1] == 1)
-	{
-		DrawLine(450, 150, 450, 750);
-		stage.update();
-		RedWin();
-	}
-	if (gridOX[0][2] == 0 && gridOX[1][2] == 0 && gridOX[2][2] == 0)
-	{
-		DrawLine(750, 150, 750, 750);
-		stage.update();
-		RedWin();
-	} */
-};
-
-function BlueWin() {
-	alert('Circles Won!!');
-	Restart();
-}
-
-function RedWin() {
-	alert('Crosses Won!!');
-	Restart();
-	
-}
-
 function DrawLine(x1, y1, x2, y2){
 	let line = new createjs.Shape();
-	line.graphics.beginStroke("red").setStrokeStyle(5, 'round').moveTo(x1,y1).lineTo(x2,y2);
+	line.graphics.beginStroke("#FFBF00").setStrokeStyle(10, 'round').moveTo(x1,y1).lineTo(x2,y2);
 	stage.addChild(line);
 	stage.update();
 }
@@ -385,25 +208,12 @@ function Restart() {
 	// Не получилось сослаться на начало кода, чтобы не повторять все то, что было уже вначале
 	// тем создания функции вроде init. Программа просто игнорировала функцию
 	stage.removeAllChildren();
-	/*gridOX = [
-		[-1, -1, -1],
-		[-1, -1, -1],
-		[-1, -1, -1]
-	];	
-	figure = 'circle';
-	count = 0;*/
-	console.log('New Game');
-	// Рисуем сетку
-	// Можно сетку реализовать в <div>, чтобы ее каждый раз не перерисовывать
 	var grid = new createjs.Shape();
-	for (i = 100; i < 1000; i += 100)
+	var lenPx = fieldSize * 100;
+	for (let i = 100; i < lenPx; i += 100)
 	{
-		grid.graphics.beginFill("black").drawRect(0, i - 1, 1000, 2);
-		grid.graphics.beginFill("black").drawRect(i - 1, 0, 2, 1000);
-		/*grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3, 0, 2, parseFloat(document.getElementById("canvas").height));
-		grid.graphics.beginFill("black").drawRect(parseFloat(document.getElementById("canvas").width) / 3 * 2, 0, 2, parseFloat(document.getElementById("canvas").height));
-		grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3, parseFloat(document.getElementById("canvas").width), 2);
-		grid.graphics.beginFill("black").drawRect(0, parseFloat(document.getElementById("canvas").height) / 3 * 2, parseFloat(document.getElementById("canvas").width), 2);*/
+		grid.graphics.beginFill("black").drawRect(0, i - 1, lenPx, 2);
+		grid.graphics.beginFill("black").drawRect(i - 1, 0, 2, lenPx);
 	}
 	stage.addChild(grid);
 	stage.update();
@@ -415,6 +225,6 @@ function reSize() {
 	let height = window.innerHeight;
 	let min = width > height ? height : width;
 	let canvas = document.getElementById('canvas');
-	canvas.style.width = min + 'px';
-	canvas.style.height = min + 'px';
+	canvas.style.width = min - 4 + 'px';
+	canvas.style.height = min - 4 + 'px';	canvas.style.left = (window.innerWidth - min) / 2 + 'px';
 }
