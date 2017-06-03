@@ -1,16 +1,41 @@
 {
-  "name": "22dayofcode",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "name": "telebot",
+  "version": "1.2.0",
+  "description": "The easy way to write Telegram bots.",
+  "main": "lib/telebot.js",
+  "engines": {
+    "node": ">= 6.0.0"
+  },
   "dependencies": {
-    "express": "^4.15.2",
-    "socket.io": "^1.7.3"
+    "node-telegram-bot-api": "^0.27.1",
+    "request": "^2.81.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ava": "^0.19.1",
+    "eslint": "^3.19.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/ava test/index.js",
+    "lint": "./node_modules/.bin/eslint **/*.js"
   },
-  "author": "",
-  "license": "ISC"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mullwar/telebot.git"
+  },
+  "keywords": [
+    "bot",
+    "api",
+    "wrapper",
+    "telebot",
+    "telegram",
+    "telegram api",
+    "telegram bot",
+    "telegram bot api"
+  ],
+  "author": "Mullwar <mullwar@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mullwar/telebot/issues"
+  },
+  "homepage": "https://github.com/mullwar/telebot"
 }
